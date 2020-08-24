@@ -1,0 +1,97 @@
+---
+title: "Extinct Plants"
+author: "Mary Crossland"
+date: "24/08/2020"
+---
+
+```{r load libraries}
+
+library(tidytuesdayR)
+library(tidyverse)
+library(ggthemes)
+library(cowplot)
+
+```
+
+```{r load data}
+
+tuesdata <- tidytuesdayR::tt_load(2020, week = 34)
+threats <- tuesdata$threats
+
+```
+
+```{r data wrangling}
+
+# Calculate number of extinctions per threat for flowering plants
+threats_per_country <- threats %>% 
+  filter(threatened == 1, group == "Flowering Plant") %>% 
+  group_by(continent) %>% 
+  count(threat_type, name = "n_threats") %>% 
+  mutate(total_extinctions_per_cont = sum(n_threats)) %>% 
+  ungroup() %>% 
+  group_by(threat_type) %>% 
+  mutate(total_extinctions_per_threat = sum(n_threats)) %>% 
+  ungroup() 
+
+# Fix threat labels so they fit and reorder factors
+threats_per_country <- threats_per_country %>%
+  mutate(threat_type = str_replace_all(threat_type, " ", "\n"),
+        continent = str_replace(continent, " ", "\n")) %>%
+  mutate(continent = fct_reorder(continent, total_extinctions_per_cont),
+         threat_type = fct_reorder(threat_type, -total_extinctions_per_threat),
+         threat_type = fct_relevel(threat_type, "Unknown", after = Inf))
+
+```
+
+```{r create plot, fig.width= 6, fig.height= 3}
+
+# Define colour palette
+pal <- c("#d7b5d8", "#df65b0", "#dd1c77")
+
+# Import & check flower image
+ggdraw() +
+  draw_image("/Users/marycrossland/R projects/TidyTuesday/images/flowers.png") 
+
+# Create plot
+my_plot <- threats_per_country %>% 
+  ggplot(aes(threat_type, continent)) +
+  geom_point(size = 8, shape = 21, color = "grey55", fill = "white") +
+  geom_point(aes(size = n_threats, color = n_threats)) +
+  labs(x = NULL, y = NULL,
+    title = "Threats to Global Flowering Plants",
+    caption = "@MaryCrossland1 | Data: IUCN Red list of Threatened Species (Version 2020-1) | #TidyTuesday ") +
+  theme_bw() +
+  scale_x_discrete(position = "top") +
+  scale_y_discrete(position = "left") +
+  scale_size(range = c(1, 7),
+             breaks = c(10, 50, 100),
+             name = "Extinct plant species") +
+  scale_color_gradientn(colours = pal, 
+                        breaks = c(10, 50, 100)) +
+  theme(panel.grid.major.x = element_line(color = "grey55", size = 0.5),
+        panel.grid.major.y =element_blank(),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8),
+        axis.text.x = element_text(size = 8), 
+        plot.caption = element_text(size = 8, hjust = 0.97, colour = "grey55"),
+        axis.text.y = element_text(size = 10),
+        plot.title = element_text( size = 16),
+        plot.margin=unit(c(1,1,1,1),"cm"),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white"),
+        legend.key  = element_rect(fill = "white"))
+
+my_plot <- ggdraw() +
+  draw_plot(p)+
+  draw_image("/Users/marycrossland/R projects/TidyTuesday/images/flowers.png",
+             hjust = -2.4, vjust = -0.2, width = 0.3, height = 0.3) 
+
+my_plot
+
+# Save final plot
+ggsave("2020_Week34_ExtinctPlants.png",
+       my_plot, height = 5, width = 12, units = "in", dpi = 300)
+
+```
+
