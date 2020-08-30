@@ -43,7 +43,7 @@ threats_per_country <- threats_per_country %>%
 
 ```
 
-```{r create plot, fig.width= 6, fig.height= 3}
+```{r create plot, fig.width=12, fig.height=5}
 
 # Define colour palette
 pal <- c("#d7b5d8", "#df65b0", "#dd1c77")
@@ -53,7 +53,7 @@ ggdraw() +
   draw_image("/Users/marycrossland/R projects/TidyTuesday/images/flowers.png") 
 
 # Create plot
-my_plot <- threats_per_country %>% 
+p <- threats_per_country %>% 
   ggplot(aes(threat_type, continent)) +
   geom_point(size = 8, shape = 21, color = "grey55", fill = "white") +
   geom_point(aes(size = n_threats, color = n_threats)) +
@@ -64,10 +64,12 @@ my_plot <- threats_per_country %>%
   scale_x_discrete(position = "top") +
   scale_y_discrete(position = "left") +
   scale_size(range = c(1, 7),
-             breaks = c(10, 50, 100),
+             breaks = c(10,  50,  100),
              name = "Extinct plant species") +
   scale_color_gradientn(colours = pal, 
-                        breaks = c(10, 50, 100)) +
+                        breaks = c(10,  50,  100),
+                        name = "Extinct plant species", 
+                        guide = guide_legend()) +
   theme(panel.grid.major.x = element_line(color = "grey55", size = 0.5),
         panel.grid.major.y =element_blank(),
         legend.title = element_text(size = 8),
@@ -85,12 +87,12 @@ my_plot <- threats_per_country %>%
 my_plot <- ggdraw() +
   draw_plot(p)+
   draw_image("/Users/marycrossland/R projects/TidyTuesday/images/flowers.png",
-             hjust = -2.4, vjust = -0.2, width = 0.3, height = 0.3) 
+             hjust = -2.5, vjust = -0.18, width = 0.3, height = 0.3) 
 
 my_plot
 
 # Save final plot
-ggsave("2020_Week34_ExtinctPlants.png",
+ggsave("/Users/marycrossland/R projects/TidyTuesday/plots/2020_Week34_ExtinctPlants.png",
        my_plot, height = 5, width = 12, units = "in", dpi = 300)
 
 ```
