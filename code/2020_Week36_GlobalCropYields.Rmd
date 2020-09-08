@@ -1,0 +1,179 @@
+---
+title: "Global Crop Yields"
+author: "Mary Crossland"
+date: "04/09/2020"
+output: html_document
+---
+
+```{r load libraries}
+
+library(tidyverse)
+library(ggthemes)
+library(colorspace)
+library(extrafont)
+
+```
+
+```{r load data}
+
+key_crop_yields <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-01/key_crop_yields.csv')
+
+```
+```{r set theme}
+
+# fonts and colors
+font_family1 <- 'Merriweather Sans'
+font_family2 <- 'Merriweather Sans'
+background <- "#39393A"
+text_colour1 <- "white"
+text_colour2 <- "black"
+my_colors <- c("#F3D2B3", "#F2B8A2", "#F38C8D")
+
+# set theme
+theme_style <- theme(text = element_text(family = font_family1),
+                  rect = element_rect(fill = background),
+                  plot.background = element_rect(fill = background, color = NA),
+                  plot.title = element_text(size = 30, colour = text_colour1),
+                  plot.subtitle = element_text(size = 16, colour = text_colour1),
+                  plot.caption = element_text(size = 10, colour = text_colour1, margin=margin(20,0,0,0)),
+                  panel.background = element_rect(fill = background, color = NA),
+                  panel.border = element_blank(),
+                  panel.grid.major.y = element_blank(),
+                  panel.grid.major.x = element_blank(),
+                  panel.grid.minor.x = element_blank(),
+                  plot.margin = unit(c(1, 1, 1, 1), "cm"),
+                  axis.title = element_blank(),
+                  axis.text.x = element_text(size = 14, colour= text_colour1),
+                  axis.text.y = element_blank(),
+                  axis.line = element_blank(),
+                  legend.text = element_text(size = 10, colour= text_colour1),)
+
+theme_set(theme_classic() + theme_style)
+
+
+```
+
+
+```{r create plots, fig.height= 8, fig.width= 12}
+
+
+# How have maize yields changed over time for Kenya, Ethiopia and Tanzania?
+
+# select countries of interest
+df <- key_crop_yields %>%
+  mutate(Entity = ifelse(Entity == "Ethiopia PDR", "Ethiopia", Entity)) %>%
+  filter(Entity == "Kenya" |
+         Entity == "Ethiopia" |
+         Entity == "Tanzania") %>% 
+  mutate(Maize = `Maize (tonnes per hectare)`) %>%
+  select(Entity, Year, Maize) 
+
+# reorder labels
+df$Entity <- factor(df$Entity, levels = c("Tanzania","Kenya", "Ethiopia"))
+
+
+# create locations in the facet for text
+kenya_text <- data.frame(Year = 1990, Maize = 4,
+                       Entity = factor("Kenya" ,levels = c("Ethiopia","Tanzania","Kenya")))
+ethi_text <- data.frame(Year = 1992, Maize = 4,
+                       Entity = factor("Ethiopia" ,levels = c("Ethiopia","Tanzania","Kenya")))
+tanzan_text <- data.frame(Year = 1984, Maize = 4.5,
+                       Entity = factor("Tanzania" ,levels = c("Ethiopia","Tanzania","Kenya")))
+
+# create locations in the facet for country labels
+kenya_lab <- data.frame(Year = 1962, Maize = 2,
+                       Entity = factor("Kenya" ,levels = c("Ethiopia","Tanzania","Kenya")))
+ethi_lab <- data.frame(Year = 1962, Maize = 2,
+                       Entity = factor("Ethiopia" ,levels = c("Ethiopia","Tanzania","Kenya")))
+tanzan_lab <- data.frame(Year = 1962, Maize = 2,
+                       Entity = factor("Tanzania" ,levels = c("Ethiopia","Tanzania","Kenya")))
+
+
+# create first plot of yield 1961 to 2018
+p2 <- ggplot(df, aes(Year, Maize, fill = Entity)) +
+  ylim(0, 5) +
+  xlim(1961, 2018) +
+  geom_area(alpha = 0.8) +
+  scale_fill_manual(values =  my_colors) +
+  theme(legend.position = "none",
+        plot.title = element_text(size = 30, colour = text_colour1, vjust = 0.5),
+        plot.subtitle = element_text(size = 14,family = font_family2, colour = text_colour1, vjust = 0.5),
+        plot.caption = element_text(size = 12, family = font_family2, colour = text_colour1, margin=margin(30,0,0,0)),
+        strip.text.x = element_blank(),
+        strip.text.y = element_blank(),
+        strip.background = element_blank()) +
+  facet_wrap(~Entity, ncol = 1)
+
+# add text and arrows
+p2 <- p2 + 
+  geom_text(data = kenya_text, label = "Average yield in Kenya has remained low,\noscillating around 1.5 tonnes per ha",
+            size = 3.5, color = text_colour1, family = font_family2) +
+  geom_curve(data = kenya_text, aes(x = 1975, y = 3, xend = 1982, yend = 2.07),
+             arrow = arrow(length = unit(0.3, "cm")), size = 0.3,
+             color = "white", curvature = 0.3) +
+  geom_text(data = ethi_text, label = "Ethiopia has seen recent gains with an average\nyield of 3.7 tonnes per ha in 2017",
+            size = 3.5, color = text_colour1, family = font_family2) +
+  geom_curve(data = ethi_text, aes(x = 2014, y = 4.3, xend = 2017, yend = 3.7),
+             arrow = arrow(length = unit(0.3, "cm")), size = 0.3,
+             color = "white", curvature = -0.3) +
+  geom_text(data = tanzan_text, label = "Tanzania saw a peak in average yield\nin 2001 at 3.1 tonnes per ha",
+            size = 3.5, color = text_colour1, family = font_family2) +
+  geom_curve(data = tanzan_text, aes(x = 1997, y = 4.2, xend = 2001, yend = 3.1),
+             arrow = arrow(length = unit(0.2, "cm")), size = 0.3,
+             color = "white", curvature = -0.3) +
+  geom_text(data = tanzan_lab, label = "Tanzania",
+            size = 5, hjust = .05, color = text_colour1, family = font_family1) +
+  geom_text(data = ethi_lab, label = "Ethiopia",
+            size = 5, hjust = .05, color = text_colour1, family = font_family1) +
+  geom_text(data = kenya_lab, label = "Kenya",
+            size = 5, hjust = .05, color = text_colour1, family = font_family1) 
+
+
+# calculate yield difference between 1961 and 2018
+yld_diff <- df %>%
+  filter(Year == 1961 | Year == 2018) %>%
+  pivot_wider(names_from = Year, values_from = Maize) %>%
+  rename("start_yld" = "1961", "end_yld" = "2018") %>%
+  mutate(yld_diffs = end_yld - start_yld) %>%
+  select(Entity, yld_diffs)
+
+# create label for bar plot
+bar_text <- data.frame(Year = 1962, Maize = 2,
+                       Entity = factor("Tanzania" ,levels = c("Ethiopia","Tanzania","Kenya")))
+  
+# create barplot of yield difference
+p1 <- ggplot(data= yld_diff, aes(x=Entity, y=yld_diffs, fill = Entity)) +
+  geom_bar(stat="identity", width=0.5) +
+  scale_fill_manual(values= my_colors) +
+  geom_text(aes(label = paste("+", round(yld_diffs,2),sep="")), size = 6, color = text_colour2, family = font_family1, vjust = 4) +
+  labs(y="Number of partcipating farmers", x = "", fill = "") +
+  theme(axis.title.x = element_text(margin = margin(t = 1, r = 0, b = 0, l = 0), size = 10),
+        legend.position = "none") +
+  geom_text(x = "Tanzania", hjust = 0.2, y = 1.5, size = 3, color = text_colour1, family = font_family1,
+           label = "Between 1961 and 2018, average yield per hectare\nincreased by 2.33 tonnes per ha in Ethiopia.\nEthiopia’s yield gains have been attributed to improved\nextension services and the use of modern\nmaize varieties and mineral fertilizers") +
+  geom_text(x = "Tanzania", hjust = -0.15, y = 1.8, size = 4, color = text_colour1, family = font_family1,
+           label = "Changes in yield") +
+  labs(caption = "Visualization: MaryCrossland1 | Data: Our World in Data") 
+
+
+# bring plots together
+gridded <- cowplot::plot_grid(p2, p1, nrow = 1, axis = "bt", rel_widths = c(2, 1.8))
+
+# create title
+title_gg <-
+  ggplot() + 
+  labs(title = "Maize Yields Across East Africa", subtitle = "Average yield (tonnes per hectare) 1961-2018") +
+  theme( plot.title = element_text(size = 30, colour = text_colour1, vjust = 1, margin=margin(30,0,0,0) ),
+                  plot.subtitle = element_text(size = 14,family = font_family2, margin=margin(12,0,0,0), colour = text_colour1, vjust = 1))
+  
+# bring plots and tile together
+final_plot <- cowplot::plot_grid(title_gg, gridded, ncol = 1, align = "bt", rel_heights = c(0.20, 1))
+
+
+# save final plot
+ggsave("/Users/marycrossland/R projects/TidyTuesday/plots/2020_Week36_GlobalCropYields.png",
+       final_plot, height = 8, width = 12, units = "in", dpi = 300)
+
+  
+```
+
