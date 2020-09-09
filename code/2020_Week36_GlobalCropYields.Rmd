@@ -109,12 +109,12 @@ p2 <- p2 +
   geom_text(data = kenya_text, label = "Average yield in Kenya has remained low,\noscillating around 1.5 tonnes per ha",
             size = 3.5, color = text_colour1, family = font_family2) +
   geom_curve(data = kenya_text, aes(x = 1975, y = 3, xend = 1982, yend = 2.07),
-             arrow = arrow(length = unit(0.3, "cm")), size = 0.3,
+             arrow = arrow(length = unit(0.2, "cm")), size = 0.3,
              color = "white", curvature = 0.3) +
   geom_text(data = ethi_text, label = "Ethiopia has seen recent gains with an average\nyield of 3.7 tonnes per ha in 2017",
             size = 3.5, color = text_colour1, family = font_family2) +
   geom_curve(data = ethi_text, aes(x = 2014, y = 4.3, xend = 2017, yend = 3.7),
-             arrow = arrow(length = unit(0.3, "cm")), size = 0.3,
+             arrow = arrow(length = unit(0.2, "cm")), size = 0.3,
              color = "white", curvature = -0.3) +
   geom_text(data = tanzan_text, label = "Tanzania saw a peak in average yield\nin 2001 at 3.1 tonnes per ha",
             size = 3.5, color = text_colour1, family = font_family2) +
@@ -141,17 +141,17 @@ yld_diff <- df %>%
 bar_text <- data.frame(Year = 1962, Maize = 2,
                        Entity = factor("Tanzania" ,levels = c("Ethiopia","Tanzania","Kenya")))
   
-# create barplot of yield difference
+# create bar plot of yield difference
 p1 <- ggplot(data= yld_diff, aes(x=Entity, y=yld_diffs, fill = Entity)) +
   geom_bar(stat="identity", width=0.5) +
   scale_fill_manual(values= my_colors) +
   geom_text(aes(label = paste("+", round(yld_diffs,2),sep="")), size = 6, color = text_colour2, family = font_family1, vjust = 4) +
-  labs(y="Number of partcipating farmers", x = "", fill = "") +
+  labs(y="", x = "", fill = "") +
   theme(axis.title.x = element_text(margin = margin(t = 1, r = 0, b = 0, l = 0), size = 10),
         legend.position = "none") +
-  geom_text(x = "Tanzania", hjust = 0.2, y = 1.5, size = 3, color = text_colour1, family = font_family1,
-           label = "Between 1961 and 2018, average yield per hectare\nincreased by 2.33 tonnes per ha in Ethiopia.\nEthiopia’s yield gains have been attributed to improved\nextension services and the use of modern\nmaize varieties and mineral fertilizers") +
-  geom_text(x = "Tanzania", hjust = -0.15, y = 1.8, size = 4, color = text_colour1, family = font_family1,
+  geom_text(x = "Tanzania", hjust = "left", y = 1.5, size = 3, color = text_colour1, family = font_family1,
+           label = "Between 1961 and 2018, average yield per\nhectare increased by 2.33 tonnes per ha\nin Ethiopia. Ethiopia’s yield gains have been\nattributed to improved extension services\nand the use of modern maize varieties\nand mineral fertilizers") +
+  geom_text(x = "Tanzania", hjust = "left", y = 1.9, size = 4, color = text_colour1, family = font_family1,
            label = "Changes in yield") +
   labs(caption = "Visualization: MaryCrossland1 | Data: Our World in Data") 
 
